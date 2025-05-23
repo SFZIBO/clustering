@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COVID-19 Country Clustering</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/covid-19.png') }}" type="image/png" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>COVID-19 Country Clustering</h1>
+            <p class="subtitle">Analisis pengelompokan negara berdasarkan data COVID-19 menggunakan K-Means</p>
+        </div>
+
+        <div class="upload-section">
+            <form method="post" action="/cluster" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="file-upload" class="upload-label">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <span>Pilih Dataset COVID-19 (CSV)</span>
+                    </label>
+                    <input type="file" name="file" id="file-upload" class="form-control-file" accept=".csv">
+                </div>
+                <button type="submit" class="btn btn-process">Proses Clustering</button>
+            </form>
+        </div>
+
+        {% if results %}
+        <div class="results-section">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="result-card">
+                        <h3>Elbow Method</h3>
+                        <img src="{{ url_for('static', filename='results/elbow_plots/' + results.elbow_plot) }}" 
+                             alt="Elbow Method Plot" class="result-img">
+                        <p class="optimal-k">Jumlah cluster optimal: {{ results.optimal_k }}</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="result-card">
+                        <h3>Hasil Clustering</h3>
+                        <img src="{{ url_for('static', filename='results/cluster_plots/' + results.cluster_plot) }}" 
+                             alt="Cluster Plot" class="result-img">
+                    </div>
+                </div>
+            </div>
+
+            <div class="cluster-table">
+                <h3>Data Negara per Cluster</h3>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Negara</th>
+                                <th>Terkonfirmasi</th>
+                                <th>Meninggal</th>
+                                <th>Sembuh</th>
+                                <th>Aktif</th>
+                                <th>Cluster</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for country in results.sample_data %}
+                            <tr>
+                                <td>{{ country['Country/Region'] }}</td>
+                                <td>{{ "{:,}".format(country['Confirmed']) }}</td>
+                                <td>{{ "{:,}".format(country['Deaths']) }}</td>
+                                <td>{{ "{:,}".format(country['Recovered']) }}</td>
+                                <td>{{ "{:,}".format(country['Active']) }}</td>
+                                <td><span class="cluster-badge cluster-{{ country['Cluster'] }}">{{ country['Cluster'] }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <a href="{{ url_for('download', filename=results.cluster_data) }}" class="btn btn-download">
+                    <i class="fas fa-download"></i> Unduh Data Lengkap
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <footer class="footer">
+        <p>© 2023 COVID-19 Clustering Analysis</p>
+    </footer>
+
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</body>
+</html>
